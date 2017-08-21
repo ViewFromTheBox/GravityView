@@ -182,7 +182,6 @@ install_gravity_forms(){
         if [[ -d "$TESTS_PLUGINS_DIR"/gravityforms ]]; then
             rsync -ar --exclude=.git "$TESTS_PLUGINS_DIR"/gravityforms /tmp/
         else
-            print_gv_help
             exit 1
         fi
 	fi
@@ -210,7 +209,6 @@ install_gravity_forms_23(){
         if [[ -d "$TESTS_PLUGINS_DIR"/gravityforms ]]; then
             rsync -ar --exclude=.git "$TESTS_PLUGINS_DIR"/gravityforms /tmp/
         else
-            print_gv_help
             exit 1
         fi
 	fi
@@ -222,3 +220,5 @@ if [[ $GF_VERSION == "2.3" ]]; then
 else
 	install_gravity_forms
 fi
+
+ls -lah /tmp/
