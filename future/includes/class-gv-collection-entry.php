@@ -66,6 +66,10 @@ class Entry_Collection extends Collection {
 			gravityview()->log->error( 'Entry_Collections can only contain objects of type \GV\Entry.' );
 			return;
 		}
+
+		$this->fetched = min( 0, $this->fetched );
+		$this->fetched++;
+
 		parent::add( $entry );
 	}
 
@@ -125,7 +129,7 @@ class Entry_Collection extends Collection {
 	 * @return \GV\Entry[] The entries as an array.
 	 */
 	public function all() {
-		if ( class_exists( '\GV\Query' ) || $this->fetched >= 0 || parent::count() ) {
+		if ( $this->fetched >= 0 || parent::count() ) {
 			return parent::all();
 		}
 		return $this->fetch()->all();
@@ -170,11 +174,9 @@ class Entry_Collection extends Collection {
 	 * @return \GV\Entry_Collection This collection, now hydrated.
 	 */
 	public function fetch() {
-		if ( class_exists( '\GV\Query' ) ) {
-				return $this;
+		if ( $this->fetched >= 0 ) {
+			return $this;
 		}
-
-		$this->clear();
 
 		/** Calculate the offsets. */
 		$offset = new \GV\Entry_Offset();

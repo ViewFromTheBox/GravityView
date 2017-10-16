@@ -48,12 +48,12 @@ class Join {
 	 * @return \GV\Query The $query
 	 */
 	public function as_query_join( $query ) {
-		if ( ! class_exists( '\GV\Query' ) || ! $query instanceof Query ) {
+		if ( ! class_exists( 'GF_Query' ) || ! $query instanceof \GF_Query ) {
 				return null;
 		}
 		return $query->join(
-			new Query\Column( $this->join_on_column, $this->join_on ),
-			new Query\Column( $this->join_column, $this->join )
+			new \GF_Query_Column( $this->join_on_column->ID, intval( $this->join_on->ID ) ),
+			new \GF_Query_Column( $this->join_column->ID, intval( $this->join->ID ) )
 		);
 	}
 }

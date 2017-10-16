@@ -565,43 +565,39 @@ class View implements \ArrayAccess {
 			/** @todo: Get the page from the request instead! */
 			$page = ( ( $parameters['paging']['offset'] - $this->settings->get( 'offset' ) ) / $parameters['paging']['page_size'] ) + 1;
 
-			if ( class_exists( '\GV\Query' ) ) {
+			if ( class_exists( 'GF_Query' ) ) {
 				/**
-				 * New \GV\Query stuff :)
+				 * New GF_Query stuff :)
 				 */
-				$query = new \GV\Query();
-				$query->from( $this->form )
-					->limit( $parameters['paging']['page_size'] )
-					->page( $page );
+				$query = new \GF_Query( $this->form->ID, rgar( $parameters, 'search_criteria', null ), rgar( $parameters, 'paging', null ) );
 
 				/**
-				 * @todo Provide a search_criteria converter for this!
-				 */
-				if ( ! empty( $parameters['search_criteria']['field_filters'] ) ) {
-					foreach( $parameters['search_criteria']['field_filters'] as $filter ) {
-						$query->where(
-								/**
-								 * @todo Use the lightweight API.
-								 */
-								new Query\Condition(
-										GF_Field::by_id( $this->form, $filter['key'] ),
-										Query\Condition::EQ,
-										new Query\Literal( $filter['value'] )
-								)
-						);
-					}
-				}
-
-				/**
-				 * The joins!
+				 * Add the joins!
 				 */
 				if ( count( $this->joins ) ) {
 					foreach ( $this->joins as $join ) {
-							$query = $join->as_query_join( $query );
+						$query = $join->as_query_join( $query );
 					}
 				}
-
-				$entries = $query->get();
+					
+				/**
+				 * Transform into our API...
+				 */
+				$entries = new \GV\Entry_Collection();
+				foreach ( $query->get() as $_entries ) {
+					if ( is_array( $_entries ) && empty( $_entries['id'] ) ) {
+						$entries->add( Multi_Entry::from_entries( array_map( '\GV\GF_Entry::from_entry', $_entries ) ) );
+					} else {
+						/**
+						 * A single non-joined entry.
+						 */
+						$entries->add( GF_Entry::from_entry( $_entries ) );
+					}
+				}
+				$total_found = $query->total_found;
+				$entries->add_count_callback( function() use ( $total_found ) {
+					return $total_found;
+				} );
 			} else {
 				$entries = $this->form->entries
 					->filter( \GV\GF_Entry_Filter::from_search_criteria( $parameters['search_criteria'] ) )
